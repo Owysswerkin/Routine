@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spine Guard 15 - L5-S1 Recovery</title>
+    <!-- Favicon using Spine SVG -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2v20'/><path d='M7 8c.2 0 .5 0 .5.5 0 .5-.3.5-.5.5s-.5 0-.5-.5c0-.5.3-.5.5-.5Z'/><path d='M7 12c.2 0 .5 0 .5.5 0 .5-.3.5-.5.5s-.5 0-.5-.5c0-.5.3-.5.5-.5Z'/><path d='M7 16c.2 0 .5 0 .5.5 0 .5-.3.5-.5.5s-.5 0-.5-.5c0-.5.3-.5.5-.5Z'/><path d='M17 8c.2 0 .5 0 .5.5 0 .5-.3.5-.5.5s-.5 0-.5-.5c0-.5.3-.5.5-.5Z'/><path d='M17 12c.2 0 .5 0 .5.5 0 .5-.3.5-.5.5s-.5 0-.5-.5c0-.5.3-.5.5-.5Z'/><path d='M17 16c.2 0 .5 0 .5.5 0 .5-.3.5-.5.5s-.5 0-.5-.5c0-.5.3-.5.5-.5Z'/><path d='M5 5h14'/><path d='M5 21h14'/><path d='M8 14h8'/><path d='M8 10h8'/><path d='M8 18h8'/></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -20,15 +23,21 @@
             to { opacity: 1; transform: scale(1); }
         }
         .animate-pop { animation: fadeIn 0.3s ease-out forwards; }
+
+        .timer-warning { color: #ef4444; animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen pb-24">
 
-    <!-- Share Overlay (Hidden by default) -->
+    <!-- Share Overlay -->
     <div id="shareOverlay" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-6">
         <div class="max-w-sm w-full space-y-4 animate-pop">
             <div id="previewContainer" class="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl aspect-square flex items-center justify-center p-2">
-                <!-- Image will be injected here -->
                 <div id="generatingLoader" class="flex flex-col items-center gap-3 text-slate-400">
                     <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
                     <p class="text-xs font-bold uppercase tracking-widest">Generating Card...</p>
@@ -45,11 +54,16 @@
     <!-- Header -->
     <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-30">
         <h1 class="text-lg font-bold flex items-center gap-2 text-indigo-900">
-            <div class="w-2 h-6 bg-indigo-600 rounded-full"></div>
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+                <i data-lucide="anatomy" class="w-5 h-5"></i>
+            </div>
             Spine Guard 15
         </h1>
         <div class="flex items-center gap-4">
-            <div class="flex items-center gap-1 text-orange-500 font-bold" title="Current Streak">
+            <button id="soundToggle" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                <i data-lucide="volume-2" id="soundIcon"></i>
+            </button>
+            <div class="flex items-center gap-1 text-orange-500 font-bold">
                 <i data-lucide="flame" class="w-5 h-5 fill-current streak-fire"></i>
                 <span id="streakCount">0</span>
             </div>
@@ -59,7 +73,7 @@
         </div>
     </header>
 
-    <!-- Tab Navigation -->
+    <!-- Navigation -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-3 z-40">
         <button onclick="switchTab('exercise')" id="navExercise" class="flex flex-col items-center gap-1 text-indigo-600">
             <i data-lucide="dumbbell" class="w-6 h-6"></i>
@@ -87,7 +101,7 @@
                     </div>
                     
                     <div class="absolute top-6 right-6 z-10 flex gap-2">
-                        <button id="videoToggle" class="bg-white/90 px-3 py-1 rounded-full text-[10px] font-black text-red-600 backdrop-blur-md uppercase tracking-wider flex items-center gap-1 hover:bg-white transition-colors">
+                        <button id="videoToggle" class="bg-white/90 px-3 py-1 rounded-full text-[10px] font-black text-red-600 backdrop-blur-md uppercase tracking-wider flex items-center gap-1 hover:bg-white">
                             <i data-lucide="youtube" class="w-3 h-3 fill-current"></i> <span id="videoBtnText">Watch Guide</span>
                         </button>
                         <div class="bg-white/90 px-3 py-1 rounded-full text-[10px] font-black text-slate-900 backdrop-blur-md uppercase tracking-wider flex items-center gap-1">
@@ -101,11 +115,8 @@
                         </div>
                         <div id="placeholderContainer" class="w-full h-full flex flex-col items-center justify-center text-white/80 p-12 text-center bg-gradient-to-t from-black/80 via-black/20 to-transparent">
                             <i data-lucide="youtube" class="w-12 h-12 mb-4 opacity-50"></i>
-                            <h3 id="placeholderTitle" class="text-xl font-bold mb-2">Video Guide Available</h3>
-                            <p id="placeholderDesc" class="text-sm opacity-60 mb-6">Tap the red button above to see the proper form.</p>
-                            <button id="openVideoBtn" class="bg-white text-slate-900 px-6 py-2 rounded-full font-bold text-sm hover:bg-indigo-50 transition-colors pointer-events-auto">
-                                Open Tutorial
-                            </button>
+                            <h3 id="placeholderTitle" class="text-xl font-bold mb-2">Video Guide</h3>
+                            <button id="openVideoBtn" class="bg-white text-slate-900 px-6 py-2 rounded-full font-bold text-sm">Open Tutorial</button>
                         </div>
                         <div id="titleOverlay" class="absolute bottom-8 left-8 right-8 pointer-events-none transition-opacity">
                             <h2 id="exerciseTitle" class="text-3xl font-extrabold text-white tracking-tight">Pelvic Tilts</h2>
@@ -119,13 +130,13 @@
                             2:00
                         </div>
                         <div class="flex gap-4">
-                            <button id="resetBtn" class="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all">
+                            <button id="resetBtn" class="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-400">
                                 <i data-lucide="rotate-ccw"></i>
                             </button>
                             <button id="playPauseBtn" class="w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl transition-all active:scale-95 bg-indigo-600 shadow-indigo-200">
                                 <i id="playIcon" data-lucide="play" class="ml-1 fill-current w-8 h-8"></i>
                             </button>
-                            <button id="nextStepBtn" class="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all">
+                            <button id="nextStepBtn" class="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600">
                                 <i data-lucide="chevron-right"></i>
                             </button>
                         </div>
@@ -155,37 +166,31 @@
             </div>
 
             <div class="flex justify-between mt-8 px-4 items-center">
-                <button id="prevBtn" class="flex items-center gap-1 font-bold text-sm transition-colors text-slate-300 pointer-events-none">
+                <button id="prevBtn" class="flex items-center gap-1 font-bold text-sm transition-colors text-slate-300">
                     <i data-lucide="chevron-left" class="w-4 h-4"></i> <span id="prevText">Back</span>
                 </button>
                 <div id="stepProgressText" class="text-slate-400 font-mono text-[10px] font-bold bg-slate-200/50 px-2 py-1 rounded">1 / 6</div>
-                <button id="footerNextBtn" class="flex items-center gap-1 font-bold text-sm text-indigo-600 hover:text-indigo-800 transition-colors">
+                <button id="footerNextBtn" class="flex items-center gap-1 font-bold text-sm text-indigo-600">
                     <span id="nextText">Next</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Completion Screen -->
+        <!-- Completion -->
         <div id="completionScreen" class="hidden text-center py-10">
-            <div class="max-w-md mx-auto bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
+            <div class="max-w-md mx-auto bg-white rounded-3xl shadow-xl p-8">
                 <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
                     <i data-lucide="check-circle-2" class="w-12 h-12"></i>
                 </div>
-                <h1 id="doneTitle" class="text-2xl font-bold text-slate-800 mb-2">Routine Finished!</h1>
+                <h1 id="doneTitle" class="text-2xl font-bold mb-2">Routine Finished!</h1>
                 <div class="flex justify-center gap-4 mb-8">
                     <div class="bg-indigo-50 px-4 py-2 rounded-xl">
-                        <p class="text-[10px] uppercase font-bold text-indigo-400">XP Gained</p>
+                        <p class="text-[10px] uppercase font-bold text-indigo-400">XP</p>
                         <p class="text-xl font-black text-indigo-600">+150</p>
                     </div>
-                    <div class="bg-orange-50 px-4 py-2 rounded-xl">
-                        <p class="text-[10px] uppercase font-bold text-orange-400">Streak</p>
-                        <p id="finalStreakText" class="text-xl font-black text-orange-600">--</p>
-                    </div>
                 </div>
-                <div class="space-y-3">
-                    <button id="restartBtn" class="w-full bg-slate-100 text-slate-800 py-4 rounded-2xl font-semibold hover:bg-slate-200 transition-colors">Restart</button>
-                    <button onclick="switchTab('progress')" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-semibold hover:bg-indigo-700 transition-colors">View Stats</button>
-                </div>
+                <button id="restartBtn" class="w-full bg-slate-100 text-slate-800 py-4 rounded-2xl font-semibold mb-3">Restart</button>
+                <button onclick="switchTab('progress')" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-semibold">View Stats</button>
             </div>
         </div>
     </main>
@@ -193,72 +198,48 @@
     <!-- Progress Tab -->
     <main id="progressTab" class="hidden max-w-2xl mx-auto p-4 md:p-8">
         <div class="space-y-6">
-            <!-- Level Info -->
-            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-                <div class="flex items-center gap-4 relative z-10">
-                    <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black">
-                        Lvl <span id="userLevel">1</span>
-                    </div>
-                    <div class="flex-1">
-                        <h2 class="font-bold text-slate-800">Spine Guardian</h2>
-                        <div class="w-full h-3 bg-slate-100 rounded-full mt-2 overflow-hidden border border-slate-50">
-                            <div id="levelExpBar" class="h-full bg-indigo-500 progress-transition" style="width: 20%"></div>
-                        </div>
-                        <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-widest">
-                            <span id="currentExp">0</span> / <span id="nextLevelExp">500</span> XP to next level
-                        </p>
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black">
+                    <span id="userLevel">1</span>
+                </div>
+                <div class="flex-1">
+                    <h2 class="font-bold">Spine Guardian</h2>
+                    <div class="w-full h-3 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                        <div id="levelExpBar" class="h-full bg-indigo-500" style="width: 20%"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Stats Grid -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col items-center">
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col items-center">
                     <i data-lucide="flame" class="w-8 h-8 text-orange-500 mb-2 fill-current streak-fire"></i>
-                    <p id="statStreak" class="text-2xl font-black text-slate-800">0</p>
+                    <p id="statStreak" class="text-2xl font-black">0</p>
                     <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Day Streak</p>
                 </div>
-                <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col items-center">
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col items-center">
                     <i data-lucide="target" class="w-8 h-8 text-emerald-500 mb-2"></i>
-                    <p id="statTotal" class="text-2xl font-black text-slate-800">0</p>
+                    <p id="statTotal" class="text-2xl font-black">0</p>
                     <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Total Sesh</p>
                 </div>
             </div>
 
-            <!-- Sharing Preview Source (Simplified for html2canvas compatibility) -->
             <div class="hidden">
                 <div id="shareCard" class="bg-indigo-600 rounded-[2.5rem] p-8 text-white w-[400px] h-[400px] relative overflow-hidden flex flex-col justify-between">
-                    <!-- Solid shapes instead of complex CSS gradients which break html2canvas -->
                     <div class="absolute -top-16 -right-16 w-48 h-48 bg-indigo-500 rounded-full opacity-50"></div>
                     <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-400 rounded-full opacity-30"></div>
-                    
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="w-1.5 h-6 bg-white rounded-full"></div>
-                            <h1 class="text-xl font-bold tracking-tight">SPINE GUARD 15</h1>
-                        </div>
-                        <p class="text-indigo-100 text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">Daily L5-S1 Recovery</p>
-                    </div>
-
+                    <div class="relative z-10"><h1 class="text-xl font-bold tracking-tight uppercase">Spine Guard 15</h1></div>
                     <div class="relative z-10 text-center py-6">
                         <div class="text-[100px] font-black leading-none mb-2 tabular-nums" id="shareStreakNum">0</div>
                         <div class="text-lg font-bold uppercase tracking-[0.3em] text-indigo-50">Day Streak</div>
                     </div>
-
-                    <div class="relative z-10 flex justify-between items-end">
-                        <div>
-                            <p class="text-[10px] uppercase font-bold text-indigo-200 opacity-80 mb-1">Status</p>
-                            <p class="font-bold text-sm">Recovering Stronger</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[10px] uppercase font-bold text-indigo-200 opacity-80 mb-1">Total XP</p>
-                            <p class="font-bold text-sm" id="shareTotalExp">0 XP</p>
-                        </div>
+                    <div class="relative z-10 flex justify-between">
+                        <span class="font-bold text-sm">Recovering Stronger</span>
+                        <span class="font-bold text-sm" id="shareTotalExp">0 XP</span>
                     </div>
                 </div>
             </div>
 
-            <button onclick="previewShareCard()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all">
+            <button onclick="previewShareCard()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
                 <i data-lucide="share-2" class="w-5 h-5"></i>
                 Preview Share Card
             </button>
@@ -266,33 +247,102 @@
     </main>
 
     <script>
-        // Data Structures
-        const routine = [
-            { id: 1, titleEn: "Pelvic Tilts", titleZh: "盆骨倾斜", duration: 120, reps: "15-20 reps", descEn: "Gently flatten your low back against the floor by tightening your stomach muscles.", descZh: "通过收紧腹部肌肉，轻轻地将下腰部贴平地面。", color: "bg-blue-600", cautionEn: "Very subtle movement. No pain.", cautionZh: "动作非常轻微，不应感到疼痛。", videoUrl: "https://www.youtube.com/embed/xbyk3ebdwRI" },
-            { id: 2, titleEn: "Bird-Dog", titleZh: "鸟狗式", duration: 180, reps: "10 reps per side", descEn: "Raise opposite arm and leg. Keep your back flat like a table.", descZh: "抬起对侧的手和脚。保持背部平直，像桌面一样。", color: "bg-emerald-600", cautionEn: "Don't arch your back.", cautionZh: "不要塌腰或拱背。", videoUrl: "https://www.youtube.com/embed/ed5K83RtKEA" },
-            { id: 3, titleEn: "Dead Bug", titleZh: "死虫式", duration: 180, reps: "8 reps per side", descEn: "Lower opposite arm/leg while keeping your low back pressed firmly down.", descZh: "放下对侧手脚时，确保下腰部紧贴地面。", color: "bg-indigo-600", cautionEn: "Core must stay engaged.", cautionZh: "核心必须始终保持收紧。", videoUrl: "https://www.youtube.com/embed/GbSC02oU3To" },
-            { id: 4, titleEn: "Glute Bridges", titleZh: "臀桥", duration: 180, reps: "3 sets of 12", descEn: "Squeeze glutes to lift hips. Stop before your back arches.", descZh: "挤压臀部肌肉抬起臀部。在腰部开始拱起前停止。", color: "bg-purple-600", cautionEn: "Don't lift too high.", cautionZh: "不要抬得太高，避免挤压腰椎。", videoUrl: "https://www.youtube.com/embed/vOvRFsGMMqo" },
-            { id: 5, titleEn: "Modified Plank", titleZh: "跪姿平板支撑", duration: 120, reps: "3 x 30sec hold", descEn: "Hold a straight line from head to knees. Focus on your deep core.", descZh: "保持头到膝盖呈直线。专注于深层核心发力。", color: "bg-orange-600", cautionEn: "Stop if back sags.", cautionZh: "如果腰部下沉请立即停止。", videoUrl: "https://www.youtube.com/embed/iDSHokfXqyA" },
-            { id: 6, titleEn: "Child's Pose", titleZh: "婴儿式", duration: 120, reps: "Relaxation", descEn: "Wide knees, reach forward, and breathe into your lower back.", descZh: "双膝张开，手臂前伸，感受腰部的放松和呼吸。", color: "bg-teal-600", cautionEn: "Deep breaths.", cautionZh: "深呼吸，彻底放松。", videoUrl: "https://www.youtube.com/embed/IMILNyVx3HA" }
-        ];
-
-        // State Management
-        let state = JSON.parse(localStorage.getItem('spineGuardState')) || {
-            streak: 0,
-            totalWorkouts: 0,
-            exp: 0,
-            lastWorkoutDate: null,
-            level: 1
+        const AudioEngine = {
+            ctx: null,
+            enabled: true,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                return this.ctx;
+            },
+            toggle() {
+                this.enabled = !this.enabled;
+                document.getElementById('soundIcon').setAttribute('data-lucide', this.enabled ? 'volume-2' : 'volume-x');
+                lucide.createIcons();
+            },
+            playPianoChime(freq = 523.25) {
+                if (!this.enabled) return;
+                const ctx = this.init();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            },
+            playCheerAndClap() {
+                if (!this.enabled) return;
+                const ctx = this.init();
+                const now = ctx.currentTime;
+                const bufferSize = ctx.sampleRate * 1.5;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, now);
+                filter.frequency.exponentialRampToValueAtTime(2000, now + 0.5);
+                const noiseGain = ctx.createGain();
+                noiseGain.gain.setValueAtTime(0, now);
+                noiseGain.gain.linearRampToValueAtTime(0.1, now + 0.2);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+                noise.connect(filter);
+                filter.connect(noiseGain);
+                noiseGain.connect(ctx.destination);
+                noise.start();
+                for (let i = 0; i < 8; i++) {
+                    const clapTime = now + (i * 0.12) + (Math.random() * 0.05);
+                    const clapOsc = ctx.createOscillator();
+                    const clapGain = ctx.createGain();
+                    clapOsc.type = 'square';
+                    clapOsc.frequency.setValueAtTime(150 + (Math.random() * 50), clapTime);
+                    clapGain.gain.setValueAtTime(0.15, clapTime);
+                    clapGain.gain.exponentialRampToValueAtTime(0.001, clapTime + 0.1);
+                    clapOsc.connect(clapGain);
+                    clapGain.connect(ctx.destination);
+                    clapOsc.start(clapTime);
+                    clapOsc.stop(clapTime + 0.1);
+                }
+            },
+            playNote(freq, startTimeOffset, duration) {
+                if (!this.enabled) return;
+                const ctx = this.init();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + startTimeOffset);
+                gain.gain.setValueAtTime(0, now + startTimeOffset);
+                gain.gain.linearRampToValueAtTime(0.2, now + startTimeOffset + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + startTimeOffset + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + startTimeOffset);
+                osc.stop(now + startTimeOffset + duration);
+            }
         };
 
-        let currentStep = 0;
-        let timeLeft = routine[0].duration;
-        let isActive = false;
-        let lang = 'en';
-        let showVideo = false;
-        let timerInterval = null;
+        const routine = [
+            { id: 1, titleEn: "Pelvic Tilts", titleZh: "盆骨倾斜", duration: 120, reps: "15-20 reps", descEn: "Gently flatten your low back against the floor.", descZh: "轻轻地将下腰部贴平地面。", color: "bg-blue-600", cautionEn: "Very subtle movement.", cautionZh: "动作非常轻微。", videoUrl: "https://www.youtube.com/embed/xbyk3ebdwRI" },
+            { id: 2, titleEn: "Bird-Dog", titleZh: "鸟狗式", duration: 180, reps: "10 per side", descEn: "Raise opposite arm and leg. Keep back flat.", descZh: "抬起对侧的手和脚。保持背部平直。", color: "bg-emerald-600", cautionEn: "Don't arch your back.", cautionZh: "不要塌腰或拱背。", videoUrl: "https://www.youtube.com/embed/ed5K83RtKEA" },
+            { id: 3, titleEn: "Dead Bug", titleZh: "死虫式", duration: 180, reps: "8 per side", descEn: "Lower opposite arm/leg while low back stays down.", descZh: "放下对侧手脚时，确保下腰部紧贴地面。", color: "bg-indigo-600", cautionEn: "Core must stay engaged.", cautionZh: "核心必须始终保持收紧。", videoUrl: "https://www.youtube.com/embed/GbSC02oU3To" },
+            { id: 4, titleEn: "Glute Bridges", titleZh: "臀桥", duration: 180, reps: "12 reps", descEn: "Squeeze glutes to lift hips.", descZh: "挤压臀部肌肉抬起臀部。", color: "bg-purple-600", cautionEn: "Don't lift too high.", cautionZh: "不要抬得太高。", videoUrl: "https://www.youtube.com/embed/vOvRFsGMMqo" },
+            { id: 5, titleEn: "Modified Plank", titleZh: "跪姿平板支撑", duration: 120, reps: "3 x 30sec", descEn: "Hold a straight line from head to knees.", descZh: "保持头到膝盖呈直线。", color: "bg-orange-600", cautionEn: "Stop if back sags.", cautionZh: "如果腰部下沉请立即停止。", videoUrl: "https://www.youtube.com/embed/iDSHokfXqyA" },
+            { id: 6, titleEn: "Child's Pose", titleZh: "婴儿式", duration: 120, reps: "Relaxation", descEn: "Reach forward, breathe into lower back.", descZh: "手臂前伸，感受腰部的放松和呼吸。", color: "bg-teal-600", cautionEn: "Deep breaths.", cautionZh: "深呼吸，彻底放松。", videoUrl: "https://www.youtube.com/embed/IMILNyVx3HA" }
+        ];
 
-        // Persistence
+        let state = JSON.parse(localStorage.getItem('spineGuardState')) || { streak: 0, totalWorkouts: 0, exp: 0, lastWorkoutDate: null, level: 1 };
+        let currentStep = 0, timeLeft = routine[0].duration, isActive = false, lang = 'en', showVideo = false, timerInterval = null;
+
         const saveState = () => localStorage.setItem('spineGuardState', JSON.stringify(state));
 
         const switchTab = (tab) => {
@@ -308,84 +358,33 @@
         const updateProgressTab = () => {
             const expForNext = state.level * 500;
             document.getElementById('userLevel').innerText = state.level;
-            document.getElementById('currentExp').innerText = state.exp;
-            document.getElementById('nextLevelExp').innerText = expForNext;
             document.getElementById('levelExpBar').style.width = `${(state.exp / expForNext) * 100}%`;
             document.getElementById('statStreak').innerText = state.streak;
             document.getElementById('statTotal').innerText = state.totalWorkouts;
             document.getElementById('streakCount').innerText = state.streak;
-            
-            // Share card hidden values
             document.getElementById('shareStreakNum').innerText = state.streak;
             document.getElementById('shareTotalExp').innerText = state.exp + ' XP';
-        };
-
-        const checkStreak = () => {
-            const today = new Date().toDateString();
-            if (state.lastWorkoutDate) {
-                const last = new Date(state.lastWorkoutDate);
-                const diff = (new Date(today) - last) / (1000 * 60 * 60 * 24);
-                if (diff > 1) state.streak = 0; 
-            }
-            document.getElementById('streakCount').innerText = state.streak;
-        };
-
-        const completeWorkout = () => {
-            const today = new Date().toDateString();
-            if (state.lastWorkoutDate !== today) {
-                state.streak++;
-                state.lastWorkoutDate = today;
-            }
-            state.totalWorkouts++;
-            state.exp += 150;
-            
-            const expNeeded = state.level * 500;
-            if (state.exp >= expNeeded) {
-                state.level++;
-                state.exp -= expNeeded;
-            }
-            
-            saveState();
-            document.getElementById('finalStreakText').innerText = state.streak;
-            updateProgressTab();
         };
 
         const updateUI = () => {
             const ex = routine[currentStep];
             document.getElementById('progressBar').style.width = `${((currentStep + 1) / routine.length) * 100}%`;
             document.getElementById('stepCounter').innerText = lang === 'en' ? `Step ${currentStep + 1} of 6` : `第 ${currentStep + 1} 步 (共 6 步)`;
-            document.getElementById('stepProgressText').innerText = `${currentStep + 1} / ${routine.length}`;
-            document.getElementById('cardHeader').className = `${ex.color} p-0 relative transition-colors duration-500`;
             document.getElementById('exerciseTitle').innerText = lang === 'en' ? ex.titleEn : ex.titleZh;
             document.getElementById('repsText').innerText = ex.reps;
-            document.getElementById('techHeader').innerText = lang === 'en' ? 'Technique' : '操作要领';
             document.getElementById('techDesc').innerText = lang === 'en' ? ex.descEn : ex.descZh;
-            document.getElementById('safetyHeader').innerText = lang === 'en' ? 'Safety Checklist' : '安全须知';
             document.getElementById('safetyDesc').innerText = lang === 'en' ? ex.cautionEn : ex.cautionZh;
-            document.getElementById('videoBtnText').innerText = showVideo ? (lang === 'en' ? 'Hide Video' : '隐藏视频') : (lang === 'en' ? 'Watch Guide' : '观看教学');
-
-            const videoContainer = document.getElementById('videoContainer');
-            const placeholder = document.getElementById('placeholderContainer');
-            const titleOverlay = document.getElementById('titleOverlay');
-            const iframe = document.getElementById('youtubeFrame');
-
+            const timerEl = document.getElementById('timerDisplay');
+            timerEl.classList.remove('timer-warning');
             if (showVideo) {
-                videoContainer.classList.remove('hidden');
-                placeholder.classList.add('hidden');
-                titleOverlay.style.opacity = '0';
-                if (iframe.src !== `${ex.videoUrl}?autoplay=1&rel=0`) iframe.src = `${ex.videoUrl}?autoplay=1&rel=0`;
+                document.getElementById('videoContainer').classList.remove('hidden');
+                document.getElementById('placeholderContainer').classList.add('hidden');
+                document.getElementById('youtubeFrame').src = `${ex.videoUrl}?autoplay=1&rel=0`;
             } else {
-                videoContainer.classList.add('hidden');
-                placeholder.classList.remove('hidden');
-                titleOverlay.style.opacity = '1';
-                iframe.src = "";
+                document.getElementById('videoContainer').classList.add('hidden');
+                document.getElementById('placeholderContainer').classList.remove('hidden');
+                document.getElementById('youtubeFrame').src = "";
             }
-
-            document.getElementById('langToggle').innerText = lang === 'en' ? '中文' : 'EN';
-            document.getElementById('prevBtn').className = `flex items-center gap-1 font-bold text-sm transition-colors ${currentStep === 0 ? 'text-slate-300 pointer-events-none' : 'text-slate-600 hover:text-slate-900 cursor-pointer'}`;
-            document.getElementById('prevText').innerText = lang === 'en' ? 'Back' : '上一个';
-            document.getElementById('nextText').innerText = currentStep === routine.length - 1 ? (lang === 'en' ? 'Finish' : '完成') : (lang === 'en' ? 'Next' : '下一步');
-
             updateTimerDisplay();
             updatePlayPauseUI();
         };
@@ -393,26 +392,24 @@
         const updateTimerDisplay = () => {
             const mins = Math.floor(timeLeft / 60);
             const secs = timeLeft % 60;
-            document.getElementById('timerDisplay').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+            const display = `${mins}:${secs.toString().padStart(2, '0')}`;
+            const timerEl = document.getElementById('timerDisplay');
+            timerEl.innerText = display;
+            if (timeLeft <= 5 && timeLeft > 0) timerEl.classList.add('timer-warning');
         };
 
         const updatePlayPauseUI = () => {
             const icon = document.getElementById('playIcon');
             const btn = document.getElementById('playPauseBtn');
-            if (isActive) {
-                btn.className = "w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl bg-slate-800 transition-all active:scale-95";
-                icon.setAttribute('data-lucide', 'pause');
-                icon.classList.remove('ml-1');
-            } else {
-                btn.className = "w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl bg-indigo-600 shadow-indigo-200 transition-all active:scale-95";
-                icon.setAttribute('data-lucide', 'play');
-                icon.classList.add('ml-1');
-            }
+            icon.setAttribute('data-lucide', isActive ? 'pause' : 'play');
+            btn.className = isActive ? "w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl bg-slate-800" : "w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl bg-indigo-600 shadow-indigo-200";
             lucide.createIcons();
         };
 
         const nextStep = () => {
             if (currentStep < routine.length - 1) {
+                AudioEngine.playNote(523.25, 0, 0.4);
+                AudioEngine.playNote(659.25, 0.1, 0.4);
                 currentStep++;
                 timeLeft = routine[currentStep].duration;
                 isActive = false;
@@ -420,99 +417,75 @@
                 clearInterval(timerInterval);
                 updateUI();
             } else {
+                AudioEngine.playNote(523.25, 0, 0.5);
+                AudioEngine.playNote(659.25, 0.1, 0.5);
+                AudioEngine.playNote(783.99, 0.2, 0.8);
+                AudioEngine.playCheerAndClap();
+                if ("vibrate" in navigator) navigator.vibrate([100, 50, 100, 50, 300]);
                 clearInterval(timerInterval);
-                completeWorkout();
+                const today = new Date().toDateString();
+                if (state.lastWorkoutDate !== today) { state.streak++; state.lastWorkoutDate = today; }
+                state.totalWorkouts++;
+                state.exp += 150;
+                saveState();
                 document.getElementById('appContent').classList.add('hidden');
                 document.getElementById('completionScreen').classList.remove('hidden');
                 lucide.createIcons();
             }
         };
 
-        const previewShareCard = () => {
-            const overlay = document.getElementById('shareOverlay');
-            const container = document.getElementById('previewContainer');
-            const loader = document.getElementById('generatingLoader');
-            const cardTemplate = document.getElementById('shareCard');
-            
-            overlay.classList.remove('hidden');
-            
-            // Clear previous image
-            const existingImg = container.querySelector('img');
-            if (existingImg) existingImg.remove();
-            loader.classList.remove('hidden');
-            
-            // Update data before capture
-            document.getElementById('shareStreakNum').innerText = state.streak;
-            document.getElementById('shareTotalExp').innerText = state.exp + ' XP';
-
-            // html2canvas workaround: Wait for next frame to ensure hidden template is ready
-            requestAnimationFrame(() => {
-                html2canvas(cardTemplate, { 
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: null,
-                    logging: false,
-                    onclone: (clonedDoc) => {
-                        // Ensure the cloned version is visible for capture
-                        const clonedCard = clonedDoc.getElementById('shareCard');
-                        clonedCard.parentElement.classList.remove('hidden');
-                    }
-                }).then(canvas => {
-                    const img = new Image();
-                    img.src = canvas.toDataURL('image/png');
-                    img.className = "max-w-full max-h-full rounded-3xl shadow-lg pointer-events-auto";
-                    img.onload = () => {
-                        loader.classList.add('hidden');
-                        container.appendChild(img);
-                    };
-                }).catch(err => {
-                    console.error("html2canvas error:", err);
-                    loader.innerHTML = `<p class="text-red-500 text-xs">Failed to generate image.</p>`;
-                });
-            });
-        };
-
-        const closeShareOverlay = () => {
-            document.getElementById('shareOverlay').classList.add('hidden');
-        };
-
-        // Event Listeners
-        document.getElementById('langToggle').addEventListener('click', () => { lang = lang === 'en' ? 'zh' : 'en'; updateUI(); });
-        document.getElementById('videoToggle').addEventListener('click', () => { showVideo = !showVideo; updateUI(); });
-        document.getElementById('openVideoBtn').addEventListener('click', () => { showVideo = true; updateUI(); });
         document.getElementById('playPauseBtn').addEventListener('click', () => {
+            AudioEngine.init();
             isActive = !isActive;
             if (isActive) {
                 timerInterval = setInterval(() => {
                     timeLeft--;
+                    if (timeLeft <= 5 && timeLeft > 0) {
+                        AudioEngine.playPianoChime(523.25 + (6 - timeLeft) * 50);
+                        if ("vibrate" in navigator) navigator.vibrate(50);
+                    }
                     if (timeLeft <= 0) { clearInterval(timerInterval); nextStep(); }
                     updateTimerDisplay();
                 }, 1000);
             } else clearInterval(timerInterval);
             updatePlayPauseUI();
         });
-        document.getElementById('resetBtn').addEventListener('click', () => { 
-            isActive = false; clearInterval(timerInterval); 
-            timeLeft = routine[currentStep].duration; updateUI(); 
-        });
+
+        document.getElementById('soundToggle').addEventListener('click', () => AudioEngine.toggle());
+        document.getElementById('langToggle').addEventListener('click', () => { lang = lang === 'en' ? 'zh' : 'en'; updateUI(); });
+        document.getElementById('videoToggle').addEventListener('click', () => { showVideo = !showVideo; updateUI(); });
+        document.getElementById('resetBtn').addEventListener('click', () => { isActive = false; clearInterval(timerInterval); timeLeft = routine[currentStep].duration; updateUI(); });
         document.getElementById('nextStepBtn').addEventListener('click', nextStep);
-        document.getElementById('footerNextBtn').addEventListener('click', nextStep);
-        document.getElementById('prevBtn').addEventListener('click', () => {
-            if (currentStep > 0) { currentStep--; timeLeft = routine[currentStep].duration; isActive = false; showVideo = false; clearInterval(timerInterval); updateUI(); }
-        });
         document.getElementById('restartBtn').addEventListener('click', () => {
-            currentStep = 0; timeLeft = routine[0].duration; isActive = false; showVideo = false;
+            currentStep = 0; timeLeft = routine[0].duration; isActive = false;
             document.getElementById('appContent').classList.remove('hidden');
             document.getElementById('completionScreen').classList.add('hidden');
             updateUI();
         });
 
-        window.onload = () => {
-            checkStreak();
-            updateProgressTab();
-            updateUI();
-            lucide.createIcons();
+        const previewShareCard = () => {
+            document.getElementById('shareOverlay').classList.remove('hidden');
+            const container = document.getElementById('previewContainer');
+            const loader = document.getElementById('generatingLoader');
+            const existingImg = container.querySelector('img');
+            if (existingImg) existingImg.remove();
+            loader.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                html2canvas(document.getElementById('shareCard'), { 
+                    scale: 2, 
+                    useCORS: true, 
+                    onclone: d => d.getElementById('shareCard').parentElement.classList.remove('hidden') 
+                }).then(canvas => {
+                    const img = new Image();
+                    img.src = canvas.toDataURL('image/png');
+                    img.className = "max-w-full max-h-full rounded-3xl shadow-lg";
+                    img.onload = () => { loader.classList.add('hidden'); container.appendChild(img); };
+                });
+            });
         };
+
+        const closeShareOverlay = () => document.getElementById('shareOverlay').classList.add('hidden');
+        window.onload = () => { updateProgressTab(); updateUI(); lucide.createIcons(); };
     </script>
 </body>
 </html>
