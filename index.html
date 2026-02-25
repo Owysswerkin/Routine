@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spine Guard 15 - L5-S1 Recovery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .progress-transition {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+        <h1 class="text-lg font-bold flex items-center gap-2 text-indigo-900">
+            <div class="w-2 h-6 bg-indigo-600 rounded-full"></div>
+            Spine Guard 15
+        </h1>
+        <button id="langToggle" class="bg-slate-100 px-3 py-1 rounded-full text-xs font-bold text-slate-600 uppercase transition-colors hover:bg-slate-200">
+            中文
+        </button>
+    </header>
+
+    <main id="appContent" class="max-w-2xl mx-auto p-4 md:p-8">
+        <!-- Progress Bar -->
+        <div class="w-full h-2 bg-slate-200 rounded-full mb-8 overflow-hidden">
+            <div id="progressBar" class="h-full bg-indigo-600 progress-transition" style="width: 16.6%"></div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+            <!-- Exercise Header/Media -->
+            <div id="cardHeader" class="bg-blue-600 p-0 relative">
+                <div class="absolute top-6 left-6 z-10 flex flex-col gap-2">
+                    <span id="stepCounter" class="bg-black/30 px-3 py-1 rounded-full text-[10px] font-bold text-white backdrop-blur-md uppercase tracking-wider w-fit">
+                        Step 1 of 6
+                    </span>
+                </div>
+                
+                <div class="absolute top-6 right-6 z-10 flex gap-2">
+                    <button id="videoToggle" class="bg-white/90 px-3 py-1 rounded-full text-[10px] font-black text-red-600 backdrop-blur-md uppercase tracking-wider flex items-center gap-1 hover:bg-white transition-colors">
+                        <i data-lucide="youtube" class="w-3 h-3 fill-current"></i> <span id="videoBtnText">Watch Guide</span>
+                    </button>
+                    <div class="bg-white/90 px-3 py-1 rounded-full text-[10px] font-black text-slate-900 backdrop-blur-md uppercase tracking-wider flex items-center gap-1">
+                        <i data-lucide="clock" class="w-3 h-3"></i> <span id="repsText">15-20 reps</span>
+                    </div>
+                </div>
+
+                <!-- Media Area -->
+                <div class="h-64 md:h-80 w-full overflow-hidden relative bg-slate-900">
+                    <div id="videoContainer" class="hidden w-full h-full">
+                        <iframe id="youtubeFrame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div id="placeholderContainer" class="w-full h-full flex flex-col items-center justify-center text-white/80 p-12 text-center bg-gradient-to-t from-black/80 via-black/20 to-transparent">
+                        <i data-lucide="youtube" class="w-12 h-12 mb-4 opacity-50"></i>
+                        <h3 id="placeholderTitle" class="text-xl font-bold mb-2">Video Guide Available</h3>
+                        <p id="placeholderDesc" class="text-sm opacity-60 mb-6">Tap the red button above to see the proper form.</p>
+                        <button id="openVideoBtn" class="bg-white text-slate-900 px-6 py-2 rounded-full font-bold text-sm hover:bg-indigo-50 transition-colors pointer-events-auto">
+                            Open Tutorial
+                        </button>
+                    </div>
+                    
+                    <div id="titleOverlay" class="absolute bottom-8 left-8 right-8 pointer-events-none transition-opacity">
+                        <h2 id="exerciseTitle" class="text-3xl font-extrabold text-white tracking-tight">Pelvic Tilts</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <!-- Timer Section -->
+                <div class="flex flex-col items-center mb-10">
+                    <div id="timerDisplay" class="text-7xl font-mono font-black tabular-nums text-slate-800 mb-6 tracking-tighter">
+                        2:00
+                    </div>
+                    <div class="flex gap-4">
+                        <button id="resetBtn" class="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all">
+                            <i data-lucide="rotate-ccw"></i>
+                        </button>
+                        <button id="playPauseBtn" class="w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl transition-all active:scale-95 bg-indigo-600 shadow-indigo-200">
+                            <i id="playIcon" data-lucide="play" class="ml-1 fill-current w-8 h-8"></i>
+                        </button>
+                        <button id="nextStepBtn" class="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all">
+                            <i data-lucide="chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Info Sections -->
+                <div class="space-y-6">
+                    <section class="flex gap-4 p-2 bg-slate-50/50 rounded-2xl border border-slate-100">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-700 shrink-0">
+                            <i data-lucide="book-open" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 id="techHeader" class="font-bold text-slate-900 text-sm mb-1">Technique</h3>
+                            <p id="techDesc" class="text-slate-600 text-sm leading-relaxed">Gently flatten your low back against the floor by tightening your stomach muscles.</p>
+                        </div>
+                    </section>
+
+                    <section class="bg-amber-50 rounded-2xl p-4 flex gap-4 border border-amber-100">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 id="safetyHeader" class="font-bold text-amber-900 text-[10px] uppercase tracking-widest mb-1">Safety Checklist</h3>
+                            <p id="safetyDesc" class="text-amber-800 text-sm">Very subtle movement. No pain.</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Navigation -->
+        <div class="flex justify-between mt-8 px-4 items-center">
+            <button id="prevBtn" class="flex items-center gap-1 font-bold text-sm transition-colors text-slate-300 pointer-events-none">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i> <span id="prevText">Back</span>
+            </button>
+            
+            <div id="stepProgressText" class="text-slate-400 font-mono text-[10px] font-bold bg-slate-200/50 px-2 py-1 rounded">
+                1 / 6
+            </div>
+
+            <button id="footerNextBtn" class="flex items-center gap-1 font-bold text-sm text-indigo-600 hover:text-indigo-800 transition-colors">
+                <span id="nextText">Next</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- Completion Screen (Hidden by default) -->
+    <div id="completionScreen" class="hidden min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="check-circle-2" class="w-12 h-12"></i>
+            </div>
+            <h1 id="doneTitle" class="text-2xl font-bold text-slate-800 mb-2">Routine Finished!</h1>
+            <p id="doneDesc" class="text-slate-500 mb-8">Great job protecting your L5-S1 today.</p>
+            <button id="restartBtn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-semibold hover:bg-slate-800 transition-colors">
+                Restart
+            </button>
+        </div>
+    </div>
+
+    <footer class="mt-8 pb-12 px-6 text-center">
+         <p id="footerProtocol" class="text-slate-400 text-[9px] max-w-sm mx-auto uppercase tracking-[0.2em] leading-loose opacity-70">
+            Lumbar Stabilization Protocol<br/>
+            Youtube Guided Exercises • L5-S1 Recovery
+         </p>
+    </footer>
+
+    <script>
+        const routine = [
+            {
+                id: 1,
+                titleEn: "Pelvic Tilts", titleZh: "盆骨倾斜",
+                duration: 120, reps: "15-20 reps",
+                descEn: "Gently flatten your low back against the floor by tightening your stomach muscles.",
+                descZh: "通过收紧腹部肌肉，轻轻地将下腰部贴平地面。",
+                color: "bg-blue-600",
+                cautionEn: "Very subtle movement. No pain.",
+                cautionZh: "动作非常轻微，不应感到疼痛。",
+                videoUrl: "https://www.youtube.com/embed/xbyk3ebdwRI"
+            },
+            {
+                id: 2,
+                titleEn: "Bird-Dog", titleZh: "鸟狗式",
+                duration: 180, reps: "10 reps per side",
+                descEn: "Raise opposite arm and leg. Keep your back flat like a table.",
+                descZh: "抬起对侧的手和脚。保持背部平直，像桌面一样。",
+                color: "bg-emerald-600",
+                cautionEn: "Don't arch your back.",
+                cautionZh: "不要塌腰或拱背。",
+                videoUrl: "https://www.youtube.com/embed/ed5K83RtKEA"
+            },
+            {
+                id: 3,
+                titleEn: "Dead Bug", titleZh: "死虫式",
+                duration: 180, reps: "8 reps per side",
+                descEn: "Lower opposite arm/leg while keeping your low back pressed firmly down.",
+                descZh: "放下对侧手脚时，确保下腰部紧贴地面。",
+                color: "bg-indigo-600",
+                cautionEn: "Core must stay engaged.",
+                cautionZh: "核心必须始终保持收紧。",
+                videoUrl: "https://www.youtube.com/embed/GbSC02oU3To"
+            },
+            {
+                id: 4,
+                titleEn: "Glute Bridges", titleZh: "臀桥",
+                duration: 180, reps: "3 sets of 12",
+                descEn: "Squeeze glutes to lift hips. Stop before your back arches.",
+                descZh: "挤压臀部肌肉抬起臀部。在腰部开始拱起前停止。",
+                color: "bg-purple-600",
+                cautionEn: "Don't lift too high.",
+                cautionZh: "不要抬得太高，避免挤压腰椎。",
+                videoUrl: "https://www.youtube.com/embed/vOvRFsGMMqo"
+            },
+            {
+                id: 5,
+                titleEn: "Modified Plank", titleZh: "跪姿平板支撑",
+                duration: 120, reps: "3 x 30sec hold",
+                descEn: "Hold a straight line from head to knees. Focus on your deep core.",
+                descZh: "保持头到膝盖呈直线。专注于深层核心发力。",
+                color: "bg-orange-600",
+                cautionEn: "Stop if back sags.",
+                cautionZh: "如果腰部下沉请立即停止。",
+                videoUrl: "https://www.youtube.com/embed/iDSHokfXqyA"
+            },
+            {
+                id: 6,
+                titleEn: "Child's Pose", titleZh: "婴儿式",
+                duration: 120, reps: "Relaxation",
+                descEn: "Wide knees, reach forward, and breathe into your lower back.",
+                descZh: "双膝张开，手臂前伸，感受腰部的放松和呼吸。",
+                color: "bg-teal-600",
+                cautionEn: "Deep breaths.",
+                cautionZh: "深呼吸，彻底放松。",
+                videoUrl: "https://www.youtube.com/embed/IMILNyVx3HA"
+            }
+        ];
+
+        let currentStep = 0;
+        let timeLeft = routine[0].duration;
+        let isActive = false;
+        let lang = 'en';
+        let showVideo = false;
+        let timerInterval = null;
+
+        const updateUI = () => {
+            const ex = routine[currentStep];
+            
+            // Progress
+            document.getElementById('progressBar').style.width = `${((currentStep + 1) / routine.length) * 100}%`;
+            document.getElementById('stepCounter').innerText = lang === 'en' ? `Step ${currentStep + 1} of 6` : `第 ${currentStep + 1} 步 (共 6 步)`;
+            document.getElementById('stepProgressText').innerText = `${currentStep + 1} / ${routine.length}`;
+
+            // Header/Title
+            document.getElementById('cardHeader').className = `${ex.color} p-0 relative transition-colors duration-500`;
+            document.getElementById('exerciseTitle').innerText = lang === 'en' ? ex.titleEn : ex.titleZh;
+            document.getElementById('repsText').innerText = ex.reps;
+
+            // Content
+            document.getElementById('techHeader').innerText = lang === 'en' ? 'Technique' : '操作要领';
+            document.getElementById('techDesc').innerText = lang === 'en' ? ex.descEn : ex.descZh;
+            document.getElementById('safetyHeader').innerText = lang === 'en' ? 'Safety Checklist' : '安全须知';
+            document.getElementById('safetyDesc').innerText = lang === 'en' ? ex.cautionEn : ex.cautionZh;
+
+            // Buttons
+            document.getElementById('videoBtnText').innerText = showVideo 
+                ? (lang === 'en' ? 'Hide Video' : '隐藏视频') 
+                : (lang === 'en' ? 'Watch Guide' : '观看教学');
+            
+            document.getElementById('prevBtn').className = `flex items-center gap-1 font-bold text-sm transition-colors ${currentStep === 0 ? 'text-slate-300 pointer-events-none' : 'text-slate-600 hover:text-slate-900 cursor-pointer'}`;
+            document.getElementById('prevText').innerText = lang === 'en' ? 'Back' : '上一个';
+            document.getElementById('nextText').innerText = currentStep === routine.length - 1 ? (lang === 'en' ? 'Finish' : '完成') : (lang === 'en' ? 'Next' : '下一步');
+
+            // Video logic
+            const videoContainer = document.getElementById('videoContainer');
+            const placeholder = document.getElementById('placeholderContainer');
+            const titleOverlay = document.getElementById('titleOverlay');
+            const iframe = document.getElementById('youtubeFrame');
+
+            if (showVideo) {
+                videoContainer.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                titleOverlay.style.opacity = '0';
+                if (iframe.src !== `${ex.videoUrl}?autoplay=1&rel=0`) {
+                    iframe.src = `${ex.videoUrl}?autoplay=1&rel=0`;
+                }
+            } else {
+                videoContainer.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                titleOverlay.style.opacity = '1';
+                iframe.src = "";
+                
+                document.getElementById('placeholderTitle').innerText = lang === 'en' ? 'Video Guide Available' : '已有视频教学';
+                document.getElementById('placeholderDesc').innerText = lang === 'en' ? 'Tap the red button above to see the proper form.' : '点击上方红色按钮查看正确动作。';
+                document.getElementById('openVideoBtn').innerText = lang === 'en' ? 'Open Tutorial' : '开启教学视频';
+            }
+
+            // Language Toggle Label
+            document.getElementById('langToggle').innerText = lang === 'en' ? '中文' : 'EN';
+            
+            // Footer
+            document.getElementById('footerProtocol').innerHTML = lang === 'en' 
+                ? 'Lumbar Stabilization Protocol<br/>Youtube Guided Exercises • L5-S1 Recovery'
+                : '腰椎稳定协议<br/>Youtube 教学引导 • L5-S1 康复';
+
+            updateTimerDisplay();
+            updatePlayPauseUI();
+        };
+
+        const updateTimerDisplay = () => {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timerDisplay').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+        };
+
+        const updatePlayPauseUI = () => {
+            const btn = document.getElementById('playPauseBtn');
+            const icon = document.getElementById('playIcon');
+            if (isActive) {
+                btn.className = "w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl transition-all active:scale-95 bg-slate-800";
+                icon.setAttribute('data-lucide', 'pause');
+                icon.classList.remove('ml-1');
+            } else {
+                btn.className = "w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl transition-all active:scale-95 bg-indigo-600 shadow-indigo-200";
+                icon.setAttribute('data-lucide', 'play');
+                icon.classList.add('ml-1');
+            }
+            lucide.createIcons();
+        };
+
+        const togglePlay = () => {
+            isActive = !isActive;
+            if (isActive) {
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        nextStep();
+                    }
+                    updateTimerDisplay();
+                }, 1000);
+            } else {
+                clearInterval(timerInterval);
+            }
+            updatePlayPauseUI();
+        };
+
+        const nextStep = () => {
+            if (currentStep < routine.length - 1) {
+                currentStep++;
+                timeLeft = routine[currentStep].duration;
+                isActive = false;
+                showVideo = false;
+                clearInterval(timerInterval);
+                updateUI();
+            } else {
+                clearInterval(timerInterval);
+                document.getElementById('appContent').classList.add('hidden');
+                document.getElementById('completionScreen').classList.remove('hidden');
+                
+                // Done text lang
+                document.getElementById('doneTitle').innerText = lang === 'en' ? 'Routine Finished!' : '训练完成！';
+                document.getElementById('doneDesc').innerText = lang === 'en' ? 'Great job protecting your L5-S1 today.' : '今天也很好地保护了你的 L5-S1。';
+                document.getElementById('restartBtn').innerText = lang === 'en' ? 'Restart' : '重新开始';
+                lucide.createIcons();
+            }
+        };
+
+        const prevStep = () => {
+            if (currentStep > 0) {
+                currentStep--;
+                timeLeft = routine[currentStep].duration;
+                isActive = false;
+                showVideo = false;
+                clearInterval(timerInterval);
+                updateUI();
+            }
+        };
+
+        // Event Listeners
+        document.getElementById('langToggle').addEventListener('click', () => {
+            lang = lang === 'en' ? 'zh' : 'en';
+            updateUI();
+        });
+
+        document.getElementById('videoToggle').addEventListener('click', () => {
+            showVideo = !showVideo;
+            updateUI();
+        });
+
+        document.getElementById('openVideoBtn').addEventListener('click', () => {
+            showVideo = true;
+            updateUI();
+        });
+
+        document.getElementById('playPauseBtn').addEventListener('click', togglePlay);
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            isActive = false;
+            clearInterval(timerInterval);
+            timeLeft = routine[currentStep].duration;
+            updateUI();
+        });
+
+        document.getElementById('nextStepBtn').addEventListener('click', nextStep);
+        document.getElementById('footerNextBtn').addEventListener('click', nextStep);
+        document.getElementById('prevBtn').addEventListener('click', prevStep);
+
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            currentStep = 0;
+            timeLeft = routine[0].duration;
+            isActive = false;
+            showVideo = false;
+            document.getElementById('appContent').classList.remove('hidden');
+            document.getElementById('completionScreen').classList.add('hidden');
+            updateUI();
+        });
+
+        // Init
+        window.onload = () => {
+            lucide.createIcons();
+            updateUI();
+        };
+    </script>
+</body>
+</html>
